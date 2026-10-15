@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 데이터 저널리스트 양성과정</title>
+<meta name="description" content="AI기반 데이터 저널리스트 양성과정 강의자료 — 16주 커리큘럼, 캡스톤 프로젝트 3종, Claude × MCP 연결 가이드">
+<meta name="theme-color" content="#0D0D0D">
+<meta property="og:title" content="AI기반 데이터 저널리스트 양성과정 강의자료">
+<meta property="og:description" content="수집 → 정제 → 분석 → 팩트체크 → 스크립트 → 영상. 16주 강의자료와 캡스톤 3종.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%232E4CFF'/%3E%3Crect x='6' y='6' width='20' height='20' fill='%23DFFF3C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Black+Han+Sans&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip" href="#weeks">본문으로 건너뛰기</a>
+
+<header class="top" id="top">
+  <a class="logo" href="#top" aria-label="처음으로"><span class="logo-sq"></span>AI DATA JOURNALIST</a>
+  <nav class="nav" aria-label="주요 메뉴">
+    <a href="#pipeline">파이프라인</a>
+    <a href="#weeks">16주</a>
+    <a href="#capstone">캡스톤 3</a>
+    <a href="#mcp">Claude×MCP</a>
+    <a href="#instructor">강사</a>
+  </nav>
+</header>
+
+<main>
+<!-- HERO -->
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-text">
+    <p class="hero-kicker">16 WEEKS · 3 CAPSTONES · 1 PIPELINE</p>
+    <h1 id="hero-title">
+      <span class="h-line">AI DATA</span>
+      <span class="h-line h-lime">JOURNALIST</span>
+      <span class="h-ko">AI기반 데이터 저널리스트<br>양성과정 강의자료</span>
+    </h1>
+    <p class="hero-sub">빠르게 만든 영상 말고, <strong>데이터로 검증된 사실</strong>을 담은 영상.<br>수집부터 영상화까지 일곱 걸음을 열여섯 주에 걸쳐 걷는다.</p>
+    <div class="hero-cta">
+      <a class="btn btn-lime" href="#weeks">1주차부터 보기 ↗</a>
+      <a class="btn btn-line" href="#capstone">캡스톤 3종</a>
+    </div>
+  </div>
+  <figure class="hero-photo" aria-label="강사 사진">
+    <div class="circle"></div><div class="slab"></div><i class="star s-a">✳</i><i class="star s-b">✳</i>
+    <img src="assets/img/instructor-cut.webp" alt="강사 김현구 교수 — 줄무늬 정장에 팔짱을 낀 모습" width="890" height="1300" fetchpriority="high">
+  </figure>
+  <div class="hero-progress" id="progress" aria-label="16주 진도 바로가기"></div>
+</section>
+
+<div class="marquee" aria-hidden="true"><div class="marquee-track" id="marquee"></div></div>
+
+<!-- PIPELINE -->
+<section class="sec sec-blue" id="pipeline" aria-labelledby="pipeline-title">
+  <div class="wrap">
+    <h2 class="sec-title" id="pipeline-title">7 STEPS</h2>
+    <p class="sec-lead">모든 주차는 이 일곱 단계 중 어딘가에 놓인다. 단계를 누르면 해당 주차 카드만 골라서 보인다.</p>
+    <ol class="pipe" id="pipe"></ol>
+  </div>
+</section>
+
+<!-- WEEKS -->
+<section class="sec sec-paper" id="weeks" aria-labelledby="weeks-title">
+  <div class="wrap">
+    <h2 class="sec-title" id="weeks-title">WEEK 01–16</h2>
+    <div class="blocks" id="blocks" aria-label="과정 구성"></div>
+    <div class="filters" id="filters" role="group" aria-label="단계별 필터"></div>
+    <p class="count" id="count" aria-live="polite"></p>
+    <div class="grid" id="weekGrid"></div>
+  </div>
+</section>
+
+<!-- CAPSTONE -->
+<section class="sec sec-lime" id="capstone" aria-labelledby="cap-title">
+  <div class="wrap">
+    <h2 class="sec-title ink" id="cap-title">CAPSTONE ×3</h2>
+    <p class="sec-lead ink">작은 것에서 큰 것으로. 세 번의 프로젝트가 난이도 계단을 만든다.</p>
+    <div class="stairs" id="stairs" role="tablist" aria-label="캡스톤 프로젝트 선택"></div>
+    <div class="cap-panel" id="capPanel"></div>
+  </div>
+</section>
+
+<!-- MCP -->
+<section class="sec sec-ink" id="mcp" aria-labelledby="mcp-title">
+  <div class="wrap">
+    <h2 class="sec-title" id="mcp-title">CLAUDE <span class="x">×</span> MCP</h2>
+    <p class="sec-lead">Claude Desktop에 말로 시키면 Premiere·After Effects·Photoshop·Illustrator·Cinema 4D가 움직인다. 연결하는 법과 막혔을 때 보는 곳.</p>
+    <div class="flow" id="mcpFlow" aria-label="연결 구조"></div>
+    <h3 class="sub">모든 도구 공통 규칙</h3>
+    <ul class="common" id="mcpCommon"></ul>
+    <h3 class="sub">도구별 연결 가이드</h3>
+    <div class="tool-tabs" id="toolTabs" role="tablist" aria-label="도구 선택"></div>
+    <div class="tool-panel" id="toolPanel"></div>
+    <h3 class="sub" id="workflow">Premiere × AE 영상 워크플로우</h3>
+    <div id="workflowPanel"></div>
+  </div>
+</section>
+
+<!-- INSTRUCTOR -->
+<section class="sec sec-paper sec-inst" id="instructor" aria-labelledby="inst-title">
+  <div class="wrap inst">
+    <div class="inst-photo"><div class="circle"></div><div class="slab"></div><img src="assets/img/instructor-cut.webp" alt="강사 김현구 교수" loading="lazy" width="890" height="1300"></div>
+    <div>
+      <h2 class="sec-title" id="inst-title">ABOUT<br>ME</h2>
+      <p class="inst-name">김현구 교수</p>
+      <p class="inst-quote">“풍부한 실무 경험과 깊이 있는 지식을 갖춘 영상 전문가”</p>
+      <p class="inst-text">실무경력 21년, 교육경력 12년의 다양한 경험과 전문성을 바탕으로 다큐멘터리, 기업홍보영상, 광고, 전시영상 등 다채로운 프로젝트를 수행해 왔습니다.</p>
+      <p class="inst-text">기획부터 촬영, 편집, 2D/3D그래픽, 다양한 모션그래픽은 물론 최근 부상하고 있는 생성형 AI 영상제작 파이프라인까지 영상제작의 전 과정을 아우르는 탄탄한 실무능력을 갖추고 있습니다.</p>
+      <h3 class="inst-h">CAREER HIGHLIGHTS</h3>
+      <ul class="inst-list">
+        <li>삼성그룹방송센터(SBC) PD</li>
+        <li>제일기획 PR영상 연출</li>
+        <li>SK C&amp;C 방송센터장</li>
+        <li>한양여자대학교 영상디자인과 전임교수</li>
+        <li>MBC아카데미 컴퓨터학원 수원점 전임강사</li>
+      </ul>
+      <a class="btn btn-ink" href="https://hgkim0001-blip.github.io/portfolio_khg/" target="_blank" rel="noopener">SHOWREEL 보러가기 ↗</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot-big">THE END<br>OF WEEK 16.</p>
+    <p class="foot-small">AI기반 데이터 저널리스트 양성과정 강의자료 · 강의용 자료이며 AI 결과물은 반드시 사람이 최종 검수합니다.</p>
+    <a href="#top" class="btn btn-ink">맨 위로 ↑</a>
+  </div>
+</footer>
+
+<dialog id="weekDialog" aria-labelledby="dlgTitle">
+  <div class="dlg" id="dlgBody"></div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/data-weeks.js"></script>
+<script src="assets/js/data-capstones.js"></script>
+<script src="assets/js/data-mcp.js"></script>
+<script src="assets/js/data-docs.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
