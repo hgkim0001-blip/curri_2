@@ -100,17 +100,77 @@
   /* ---------- dialog ---------- */
   var dlg = $("#weekDialog"), body = $("#dlgBody"), current = null, lastFocus = null;
   function list(items, cls) { return '<ul class="' + (cls || "") + '">' + items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>"; }
-  function docList(list) {
-    return list.map(function (d) {
-      return '<li class="doc"><span class="doc-k">' + esc(d.kind) + '</span><a class="doc-n" href="' + esc(d.view) + '" target="_blank" rel="noopener">' + esc(d.name) + '</a>' +
-        '<a class="doc-dl" href="' + esc(d.orig) + '" download="' + esc(d.dl) + '" title="원본 내려받기">원본 ↓</a></li>';
-    }).join("");
+  /* ---------- documents (내부 뷰어) ---------- */
+  var DOCS = window.DOCS || [], BYID = {};
+  DOCS.forEach(function (d) { BYID[d.id] = d; });
+  function size(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB"; }
+  function metaOf(d) {
+    var m = [];
+    if (d.vt === "pdf" && d.pg) m.push(d.pg + "쪽");
+    if (d.x === "csv" && d.pg) m.push(d.pg.toLocaleString() + "행");
+    m.push(size(d.s));
+    return m.join(" · ");
   }
+  function docItem(d) {
+    var tag = d.w && d.w.length > 1 ? '<span class="doc-tag">' + d.w[0] + "–" + d.w[d.w.length - 1] + "주차 공통</span>" : "";
+    return '<li class="doc"><span class="doc-k">' + esc(d.k) + '</span><a class="doc-n" href="#doc-' + d.id + '" data-doc="' + d.id + '">' + esc(d.t) + "</a>" + tag +
+      '<span class="doc-m">' + esc(metaOf(d)) + '</span><a class="doc-dl" href="' + esc(d.f) + '" download="' + esc(d.dl) + '" title="원본 내려받기">원본 ↓</a></li>';
+  }
+  function docList(arr) {
+    var out = "", g = "";
+    arr.forEach(function (d) {
+      if (d.g && d.g !== g) { g = d.g; out += '<li class="doc-g">' + esc(g) + "</li>"; }
+      out += docItem(d);
+    });
+    return out;
+  }
+  var docDlg = $("#docDialog"), docCtx = [], docPrev = "";
+  function openDoc(id, ctx, push) {
+    var d = BYID[id]; if (!d) return;
+    if (ctx) docCtx = ctx;
+    var i = docCtx.indexOf(id);
+    if (!docDlg.open) { docPrev = /^#doc-/.test(location.hash) ? "#weeks" : location.hash; docDlg._focus = document.activeElement; }
+    var media;
+    if (d.vt === "pdf") media = '<iframe class="dv-frame" id="dvFrame" title="' + esc(d.t) + '" src="' + esc(d.v) + '#view=FitH"></iframe>';
+    else if (d.vt === "html") media = '<iframe class="dv-frame" id="dvFrame" title="' + esc(d.t) + '" src="' + esc(d.v) + '"></iframe>';
+    else if (d.vt === "img") media = '<div class="dv-img"><img src="' + esc(d.v) + '" alt="' + esc(d.t) + '"></div>';
+    else media = '<div class="dv-none"><p>미리보기를 지원하지 않는 파일입니다 (.' + esc(d.x) + ").</p><p>[원본 내려받기]로 받아 해당 프로그램에서 열어 주세요.</p></div>";
+    docDlg.innerHTML =
+      '<div class="dv-bar"><h3 id="dvTitle">' + esc(d.t) + "</h3><div class=\"dv-act\">" +
+      (i > 0 ? '<button type="button" class="btn btn-line sm" data-dv="' + docCtx[i - 1] + '" aria-label="이전 자료">←</button>' : "") +
+      (i > -1 && i < docCtx.length - 1 ? '<button type="button" class="btn btn-line sm" data-dv="' + docCtx[i + 1] + '" aria-label="다음 자료">→</button>' : "") +
+      '<a class="btn btn-lime sm" href="' + esc(d.f) + '" download="' + esc(d.dl) + '">원본 내려받기</a>' +
+      (d.vt !== "none" ? '<a class="btn btn-line sm" href="' + esc(d.v) + '" target="_blank" rel="noopener">새 탭에서 열기</a>' : "") +
+      (d.vt === "pdf" || d.vt === "html" ? '<button type="button" class="btn btn-line sm" data-fs>전체화면</button>' : "") +
+      '<button type="button" class="btn btn-ink sm" data-dvclose aria-label="닫기">닫기 ✕</button></div></div>' +
+      media + '<p class="dv-note">' + esc(metaOf(d)) + (d.vt === "pdf" ? " · 화면에 문서가 보이지 않으면(일부 휴대폰) [새 탭에서 열기]를 누르세요." : "") + "</p>";
+    if (!docDlg.open) { if (docDlg.showModal) docDlg.showModal(); else docDlg.setAttribute("open", ""); }
+    if (push !== false) history.replaceState(null, "", "#doc-" + id);
+  }
+  docDlg.addEventListener("close", function () {
+    docDlg.innerHTML = "";
+    if (/^#doc-/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search + (docPrev || "#weeks"));
+    var f = docDlg._focus; if (f && f.focus) { try { f.focus(); } catch (e) {} }
+  });
+  docDlg.addEventListener("click", function (e) {
+    if (e.target === docDlg || e.target.closest("[data-dvclose]")) return docDlg.close();
+    var g = e.target.closest("[data-dv]"); if (g) return openDoc(g.getAttribute("data-dv"));
+    if (e.target.closest("[data-fs]")) { var fr = $("#dvFrame"); if (fr && fr.requestFullscreen) fr.requestFullscreen(); }
+  });
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest("[data-doc]"); if (!a) return;
+    e.preventDefault();
+    var ul = a.closest("ul,#etcGrid");
+    var ids = $$("[data-doc]", ul).map(function (x) { return x.getAttribute("data-doc"); });
+    openDoc(a.getAttribute("data-doc"), ids);
+  });
+  function docsOf(fn) { return DOCS.filter(fn); }
   function openWeek(n, push) {
     var w = WEEKS[n - 1]; if (!w) return;
     current = n; if (!dlg.open) lastFocus = document.activeElement;
     var c = PHASES[w.phase].color;
-    var docs = docList(window.WEEK_DOCS && window.WEEK_DOCS[n] || []);
+    var wd = docsOf(function (d) { return d.c === "week" && d.w.indexOf(n) > -1; });
+    var docs = docList(wd);
     body.innerHTML =
       '<div class="dlg-head dlg-' + c + '"><button type="button" class="dlg-x" data-close aria-label="닫기">✕</button>' +
       '<span class="dlg-n">' + pad(w.n) + '</span><div><p class="dlg-phase">' + esc(PHASES[w.phase].label) + " · " + esc(PHASES[w.phase].range) + '</p>' +
@@ -122,7 +182,7 @@
       '<section><h4>핵심 내용</h4>' + list(w.topics, "topics") + '</section></div>' +
       '<section class="dlg-prac"><h4>실습</h4><p>' + esc(w.practice) + '</p></section>' +
       '<aside class="dlg-note"><b>기억할 것</b> ' + esc(w.note) + '</aside>' +
-      '<section><h4>자료 보기 (' + (window.WEEK_DOCS && window.WEEK_DOCS[n] ? window.WEEK_DOCS[n].length : 0) + ')</h4><ul class="docs">' + docs + '</ul></section>' +
+      '<section><h4>자료 보기 (' + wd.length + ')</h4>' + (wd.length ? '<ul class="docs">' + docs + "</ul>" : '<p class="small">이 주차에는 별도 첨부 자료가 없습니다.</p>') + '</section>' +
       '<p class="dlg-next">NEXT → ' + esc(w.next) + '</p>' +
       '<div class="dlg-nav"><button type="button" class="btn btn-line sm" data-go="' + (n - 1) + '"' + (n === 1 ? " disabled" : "") + '>← ' + (n > 1 ? pad(n - 1) + "주차" : "") + '</button>' +
       '<button type="button" class="btn btn-lime sm" data-go="' + (n + 1) + '"' + (n === 16 ? " disabled" : "") + '>' + (n < 16 ? pad(n + 1) + "주차" : "") + ' →</button></div></div>';
@@ -149,6 +209,11 @@
   function fromHash() {
     var m = /^#week-(\d+)$/.exec(location.hash);
     if (m) openWeek(+m[1], false);
+    var d = /^#doc-(d\d+)$/.exec(location.hash);
+    if (d && BYID[d[1]]) {
+      var x = BYID[d[1]], ctx = DOCS.filter(function (q) { return q.c === x.c && (x.c !== "week" || q.w[0] === x.w[0]); }).map(function (q) { return q.id; });
+      openDoc(d[1], ctx, false);
+    }
   }
   window.addEventListener("hashchange", fromHash);
 
@@ -174,6 +239,9 @@
         return '<ol class="tl">' + b.items.map(function (i) { return "<li><b>" + esc(i[0]) + "</b><span>" + esc(i[1]) + "</span></li>"; }).join("") + "</ol>";
       case "chips":
         return '<ul class="chips">' + b.items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul>";
+      case "docs":
+        return '<div class="capdocs">' + (b.title ? "<h5>" + esc(b.title) + "</h5>" : "") + '<ul class="docs">' +
+          b.items.map(function (k) { return BYID[(window.DOC_KEYS || {})[k]]; }).filter(Boolean).map(docItem).join("") + "</ul></div>";
       case "callout":
         return '<p class="call call-' + b.tone + '">' + esc(b.text) + "</p>";
     }
@@ -224,7 +292,7 @@
     $("#toolPanel").innerHTML =
       '<div class="tp-head"><h3>' + esc(t.name) + '</h3><p>' + esc(t.summary) + "</p></div>" +
       '<dl class="meta">' + t.meta.map(function (m) { return "<div><dt>" + esc(m[0]) + "</dt><dd>" + esc(m[1]) + "</dd></div>"; }).join("") + "</dl>" +
-      (window.MCP_DOCS && window.MCP_DOCS[t.id] ? '<ul class="docs mcpdoc">' + docList([window.MCP_DOCS[t.id]]) + '</ul>' : "") +
+      (function () { var md = docsOf(function (d) { return d.c === "mcp" && d.tool === t.id; }); return md.length ? '<ul class="docs mcpdoc">' + docList(md) + "</ul>" : ""; })() +
       '<p class="struct"><b>구조</b> ' + esc(t.structure) + "</p>" +
       '<div class="tp-cols"><section><h4>설치 순서</h4><ol class="isteps">' + t.steps.map(function (s) { return "<li><b>" + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></li>"; }).join("") + "</ol></section>" +
       "<section><h4>설정 파일 · 명령어</h4>" + codeBlock("claude_desktop_config.json → mcpServers 안에 추가", t.config) +
@@ -245,7 +313,7 @@
   var wf = window.MCP_WORKFLOW;
   var maxCut = Math.max.apply(null, wf.cuts.map(function (c) { return c[1]; }));
   $("#workflowPanel").innerHTML =
-    '<p class="wf-intro">' + esc(wf.intro) + "</p>" + (window.WORKFLOW_DOC ? '<ul class="docs mcpdoc">' + docList([window.WORKFLOW_DOC]) + '</ul>' : "") +
+    '<p class="wf-intro">' + esc(wf.intro) + "</p>" +
     '<div class="flow wf-flow">' + wf.flow.map(function (f, i) { return '<span class="fl">' + esc(f) + "</span>" + (i < wf.flow.length - 1 ? '<i class="fl-a">→</i>' : ""); }).join("") + "</div>" +
     '<div class="tbl-wrap"><table class="tbl dark roles"><thead><tr><th>단계</th><th>사람이 하는 일</th><th>Claude가 하는 일</th></tr></thead><tbody>' +
     wf.roles.map(function (r) { return "<tr><td><b>" + esc(r[0]) + "</b></td><td>" + esc(r[1]) + "</td><td>" + esc(r[2]) + "</td></tr>"; }).join("") + "</tbody></table></div>" +
@@ -254,6 +322,20 @@
     }).join("") + "</div><p class=\"small\">" + esc(wf.cutsNote) + "</p></section>" +
     "<section><h4>작업 규칙</h4>" + list(wf.rules, "rules") + "</section></div>" +
     '<p class="call call-coral"><b>사람이 직접 해야 하는 작업</b> ' + wf.manual.map(esc).join(" · ") + "</p>";
+
+  /* ---------- 기타 ---------- */
+  var ETC_NOTE = {
+    "AI저널리스트과정_전체과정안내_수강생용_뉴디자인": "수강생에게 나눠주는 전체 과정 안내 슬라이드.",
+    "방송용_뉴스원고_잘쓰는법": "방송 뉴스 원고를 쓸 때 지켜야 할 요령 정리.",
+    "코랩_CSV파일_생성규칙": "원자료(raw) · 정제(clean) · 교차검증(crosscheck) CSV를 구분해 만드는 규칙과 체크리스트.",
+    "Premiere_AE_Video_Workflow_Guide": "Premiere Pro와 After Effects를 오가며 영상을 만드는 작업 흐름 가이드.",
+    "깃허브데스크탑": "GitHub Desktop으로 사이트를 올려 GitHub Pages로 공개하는 순서."
+  };
+  var etcDocs = docsOf(function (d) { return d.c === "etc"; }).sort(function (a, b) { return Object.keys(ETC_NOTE).indexOf(a.key) - Object.keys(ETC_NOTE).indexOf(b.key); });
+  $("#etcGrid").innerHTML = etcDocs.map(function (d) {
+    return '<article class="etc-card"><span class="doc-k">' + esc(d.k) + "</span><h3>" + esc(d.t) + "</h3><p>" + esc(ETC_NOTE[d.key] || "") + '</p><p class="etc-m">' + esc(metaOf(d)) + "</p>" +
+      '<div class="etc-act"><a class="btn btn-ink sm" href="#doc-' + d.id + '" data-doc="' + d.id + '">열어보기</a><a class="btn btn-line sm" href="' + esc(d.f) + '" download="' + esc(d.dl) + '">원본 ↓</a></div></article>';
+  }).join("");
 
   /* ---------- init ---------- */
   renderGrid();
